@@ -1,0 +1,130 @@
+# This code creates a box and borders for the snake. 
+# The game works by rethinking the array, 
+# which stores information about the steps for each given cell. 
+# After eating a bonus, a new bonus is created in a random cell. 
+# The game ends when the snake crashes into the borders or into itself.
+#The snake starts with one square and is three squares long, but this is easy to fix. 
+
+# Actually i have to use magic numbers in this code
+
+import random
+import os
+from threading import Timer
+
+# This's my code  :-)
+snake_len = 3
+field_side = snake_len + 4
+field = []
+column = 1
+row = 1
+check = 1
+default_direction = 'R'
+
+def create_field (field_side):
+    field = []
+    top_string = [888 for x in range(field_side+2)]
+    field.append(top_string)
+    for field_height in range(field_side):
+        string = []
+        string.append(888)
+        for cell in range(field_side):
+            string.append(0)
+        string.append(888)
+        field.append(string)
+    field[1][1] = 1
+    field.append(top_string)
+    return field
+
+def bonus():
+    row = random.randint(1, field_side-2)
+    column = random.randint(1, field_side-2)
+    while field[row][column] != 777:
+        if field[row][column] == 0:
+            field[row][column] = 777
+
+def checking(next_step):
+    if next_step == 0:
+        return 1
+    elif next_step == 777:
+        global snake_len
+        snake_len +=1
+        bonus()
+        return 2
+    else:
+        return 0
+
+def game_over():
+    global field
+    print('Try again this crazy game')
+    snake_len = 3
+    field = create_field(snake_len+2)
+
+
+def move( ):
+    global row
+    global column
+    global check
+    global default_direction
+    direction = ''
+    timeout = 7
+    direction = 'You have %d seconds to change your way! \n \
+    R - for right, L - for left, T - for top, and D for down: \n' % timeout
+    t = Timer(timeout, print, ['Sorry, times up'])
+    t.start()
+    prompt = direction
+    direction = input(prompt)
+    t.cancel()
+    direction = direction.upper()
+    vector = 1
+    if direction != 'T' and direction != 'L' and direction != 'R' and direction != 'D':
+        direction = default_direction
+        print('new direction = ', direction)
+    print('direction = ', direction)
+
+    if direction == 'T' or direction == "L":
+        vector = -1
+
+    if direction == 'R' or direction == 'L':
+        column += vector
+    elif direction == 'T' or direction == 'D':
+        row += vector
+
+    next_step = field[row][column]
+    check = checking(next_step)
+    if check == 2:
+        field[row][column] = 0
+    field[row][column] += 1
+    default_direction = direction
+    print('Next step is [{}][{}]'.format((row), column))
+
+
+def print_and_clean_field():
+    for row in range(field_side):
+        for column in range(field_side):
+            if field[row][column] == 0:
+                print(' ', end='')
+            elif 0 < field[row][column] < snake_len+1:
+                print('*', end='')
+                field[row][column] +=1
+            elif field[row][column] == snake_len+1:
+                print(' ', end='')
+                field[row][column] = 0
+            elif field[row][column] == 777:
+                print('$', end='')
+            elif field[row][column] == 888:
+                print('~', end='')
+
+        print('')
+
+
+field = create_field(snake_len+2)
+bonus()
+print_and_clean_field()
+
+while(check != 0):
+    move()
+    print_and_clean_field()
+    #print(field)
+print('snake_len = ', snake_len)
+game_over()
+
